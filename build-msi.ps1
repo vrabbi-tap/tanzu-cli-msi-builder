@@ -1,12 +1,19 @@
-$DIR=(pwd).path
+# Variables
 $outputDirName = "output"
 $tapVersion = "1.2.1"
+$tanzuZipFileName = "tanzu-framework-windows-amd64.zip"
+$company = "TeraSky Israel"
+$upgradeCode = 'a8473e56-43ec-4665-9132-2ff94ac32b33'
+$productName = "TAP"
+
+# MSI Builder Logic
+$DIR=(pwd).path
 $installAction = New-InstallerCustomAction -FileId 'InstallPlugins' -CheckReturnValue -RunOnInstall -arguments '-NoProfile -WindowStyle Normal -InputFormat None -ExecutionPolicy Bypass'
 $uninstallAction = New-InstallerCustomAction -FileId 'UninstallPlugins' -CheckReturnValue -RunOnUninstall -arguments '-NoProfile -WindowStyle Normal -InputFormat None -ExecutionPolicy Bypass'
-New-Installer -Productname "TAP" -Manufacturer "TeraSky Israel" -platform x64 -UpgradeCode 'a8473e56-43ec-4665-9132-2ff94ac32b33' -Content {
+New-Installer -Productname $productName -Manufacturer $company -platform x64 -UpgradeCode $upgradeCode -Content {
   New-InstallerDirectory -PredefinedDirectory "ProgramFiles64Folder"  -Content {
     New-InstallerDirectory -DirectoryName "tanzu" -Content {
-      New-InstallerFile -Source .\tanzu-framework-windows-amd64.zip -Id 'bundle'
+      New-InstallerFile -Source .\$tanzuZipFileName -Id 'bundle'
       New-InstallerFile -Source .\install-plugins.ps1 -Id 'InstallPlugins'
       New-InstallerFile -Source .\uninstall-tanzu-cli.ps1 -Id 'UninstallPlugins'
     }
