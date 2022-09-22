@@ -16,15 +16,17 @@ New-Installer -Productname $productName -Manufacturer $company -platform x64 -Up
       New-InstallerFile -Source .\$tanzuZipFileName -Id 'bundle'
       New-InstallerFile -Source .\install-plugins.ps1 -Id 'InstallPlugins'
       New-InstallerFile -Source .\uninstall-tanzu-cli.ps1 -Id 'UninstallPlugins'
+      New-InstallerFile -Source .\EULA.rtf -Id 'EULA'
     }
   }
 } -OutputDirectory (Join-Path $PSScriptRoot "$outputDirName") -RequiresElevation -verbose -version $tapVersion -CustomAction $installAction,$uninstallAction -AddRemoveProgramsIcon $DIR\tanzu-icon.ico
 
 cd $outputDirName
 ((Get-Content -path .\TAP.$tapVersion.x64.wxs -Raw) -replace '<CustomAction Id=','<CustomAction Impersonate="no" Id=') | Set-Content -Path .\TAP.$tapVersion.x64.wxs
+((Get-Content -path .\TAP.$tapVersion.x64.wxs -Raw) -replace '</Product>','<UIRef Id="WixUI_Minimal" /><UIRef Id="WixUI_ErrorProgressText" /></Product>') | Set-Content -Path .\TAP.$tapVersion.x64.wxs
 rm -force .\TAP.$tapVersion.x64.msi
 $modulePath = (Get-Module -ListAvailable PowerShellProTools)[0].path
 $modulePath = $modulePath.substring(0,$modulePath.LastIndexOf("\"))
 & $modulePath\Wix\bin\candle.exe ".\TAP.$tapVersion.x64.wxs"
-& $modulePath\Wix\bin\light.exe ".\TAP.$tapVersion.x64.wixobj"
+& $modulePath\Wix\bin\light.exe -dWixUILicenseRtf="$DIR\EULA.rtf" -ext WixUIExtension ".\TAP.$tapVersion.x64.wixobj" -o "TAP.$tapVersion.x64.msi"
 cd $DIR
